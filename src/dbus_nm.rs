@@ -7,12 +7,14 @@ use dbus::arg::{Array, Dict, Iter, RefArg, Variant};
 use ascii::AsciiStr;
 
 use errors::*;
-use dbus_api::{extract, path_to_string, DBusApi, VariantTo, variant_iter_to_vec_u8};
+use dbus_api::{extract, path_to_string, DBusApi, variant_iter_to_vec_u8};
 use manager::{Connectivity, NetworkManagerState};
 use connection::{ConnectionSettings, ConnectionState};
 use ssid::{AsSsidSlice, Ssid};
 use device::{DeviceState, DeviceType};
 use wifi::{AccessPoint, AccessPointCredentials, NM80211ApFlags, NM80211ApSecurityFlags};
+
+use crate::dbus_api::BoxTo;
 
 type VariantMap = HashMap<String, Variant<Box<dyn RefArg>>>;
 
@@ -445,32 +447,28 @@ impl DBusNetworkManager {
     }
 }
 
-impl VariantTo<DeviceType> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<DeviceType> {
-        value.0.as_i64().map(DeviceType::from)
+impl BoxTo<DeviceType> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<DeviceType> {
+        value.as_i64().map(DeviceType::from)
     }
 }
 
-impl VariantTo<DeviceState> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<DeviceState> {
-        value.0.as_i64().map(DeviceState::from)
+impl BoxTo<DeviceState> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<DeviceState> {
+        value.as_i64().map(DeviceState::from)
     }
 }
 
-impl VariantTo<NM80211ApFlags> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<NM80211ApFlags> {
-        value
-            .0
-            .as_i64()
+impl BoxTo<NM80211ApFlags> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<NM80211ApFlags> {
+        value.as_i64()
             .and_then(|v| NM80211ApFlags::from_bits(v as u32))
     }
 }
 
-impl VariantTo<NM80211ApSecurityFlags> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<NM80211ApSecurityFlags> {
-        value
-            .0
-            .as_i64()
+impl BoxTo<NM80211ApSecurityFlags> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<NM80211ApSecurityFlags> {
+        value.as_i64()
             .and_then(|v| NM80211ApSecurityFlags::from_bits(v as u32))
     }
 }

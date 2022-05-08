@@ -132,7 +132,7 @@ impl DBusApi {
 
     pub fn property<T>(&self, path: &str, interface: &str, name: &str) -> Result<T>
     where
-        DBusApi: VariantTo<T>,
+        DBusApi: BoxTo<T>,
     {
         let property_error = |details: &str, err: bool| {
             let message = format!(
@@ -148,8 +148,9 @@ impl DBusApi {
         };
 
         let path = self.with_path(path);
+        let res: std::result::Result<Box<dyn RefArg>, dbus::Error> = path.get(interface, name);
 
-        match path.get(interface, name) {
+        match res {
             Ok(variant) => match DBusApi::variant_to(&variant) {
                 Some(data) => Ok(data),
                 None => bail!(property_error("wrong property type", true)),
@@ -195,39 +196,39 @@ impl DBusApi {
     }
 }
 
-pub trait VariantTo<T> {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<T>;
+pub trait BoxTo<T> {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<T>;
 }
 
-impl VariantTo<String> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<String> {
-        value.0.as_str().and_then(|v| Some(v.to_string()))
+impl BoxTo<String> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<String> {
+        value.as_str().and_then(|v| Some(v.to_string()))
     }
 }
 
-impl VariantTo<i64> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<i64> {
-        value.0.as_i64()
+impl BoxTo<i64> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<i64> {
+        value.as_i64()
     }
 }
 
-impl VariantTo<u32> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<u32> {
-        value.0.as_i64().and_then(|v| Some(v as u32))
+impl BoxTo<u32> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<u32> {
+        value.as_i64().and_then(|v| Some(v as u32))
     }
 }
 
-impl VariantTo<bool> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<bool> {
-        value.0.as_i64().and_then(|v| Some(v == 0))
+impl BoxTo<bool> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<bool> {
+        value.as_i64().and_then(|v| Some(v == 0))
     }
 }
 
-impl VariantTo<Vec<String>> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<Vec<String>> {
+impl BoxTo<Vec<String>> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<Vec<String>> {
         let mut result = Vec::new();
 
-        if let Some(list) = value.0.as_iter() {
+        if let Some(list) = value.as_iter() {
             for element in list {
                 if let Some(string) = element.as_str() {
                     result.push(string.to_string());
@@ -243,11 +244,11 @@ impl VariantTo<Vec<String>> for DBusApi {
     }
 }
 
-impl VariantTo<Vec<u8>> for DBusApi {
-    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<Vec<u8>> {
+impl BoxTo<Vec<u8>> for DBusApi {
+    fn variant_to(value: &Box<dyn RefArg>) -> Option<Vec<u8>> {
         let mut result = Vec::new();
 
-        if let Some(list) = value.0.as_iter() {
+        if let Some(list) = value.as_iter() {
             for element in list {
                 if let Some(value) = element.as_i64() {
                     result.push(value as u8);
