@@ -14,7 +14,7 @@ use ssid::{AsSsidSlice, Ssid};
 use device::{DeviceState, DeviceType};
 use wifi::{AccessPoint, AccessPointCredentials, NM80211ApFlags, NM80211ApSecurityFlags};
 
-type VariantMap = HashMap<String, Variant<Box<RefArg>>>;
+type VariantMap = HashMap<String, Variant<Box<dyn RefArg>>>;
 
 const NM_SERVICE_MANAGER: &str = "org.freedesktop.NetworkManager";
 
@@ -167,9 +167,9 @@ impl DBusNetworkManager {
             NM_SERVICE_INTERFACE,
             "ActivateConnection",
             &[
-                &Path::new(path)? as &RefArg,
-                &Path::new("/")? as &RefArg,
-                &Path::new("/")? as &RefArg,
+                &Path::new(path)? as &dyn RefArg,
+                &Path::new("/")? as &dyn RefArg,
+                &Path::new("/")? as &dyn RefArg,
             ],
         )?;
 
@@ -181,7 +181,7 @@ impl DBusNetworkManager {
             NM_SERVICE_PATH,
             NM_SERVICE_INTERFACE,
             "DeactivateConnection",
-            &[&Path::new(path)? as &RefArg],
+            &[&Path::new(path)? as &dyn RefArg],
         )?;
 
         Ok(())
@@ -257,9 +257,9 @@ impl DBusNetworkManager {
             NM_SERVICE_INTERFACE,
             "AddAndActivateConnection",
             &[
-                &settings as &RefArg,
-                &Path::new(device_path.to_string())? as &RefArg,
-                &Path::new(access_point.path.to_string())? as &RefArg,
+                &settings as &dyn RefArg,
+                &Path::new(device_path.to_string())? as &dyn RefArg,
+                &Path::new(access_point.path.to_string())? as &dyn RefArg,
             ],
         )?;
 
@@ -333,9 +333,9 @@ impl DBusNetworkManager {
             NM_SERVICE_INTERFACE,
             "AddAndActivateConnection",
             &[
-                &settings as &RefArg,
-                &Path::new(device_path)? as &RefArg,
-                &Path::new("/")? as &RefArg,
+                &settings as &dyn RefArg,
+                &Path::new(device_path)? as &dyn RefArg,
+                &Path::new("/")? as &dyn RefArg,
             ],
         )?;
 
@@ -357,7 +357,7 @@ impl DBusNetworkManager {
             NM_SERVICE_PATH,
             NM_SERVICE_INTERFACE,
             "GetDeviceByIpIface",
-            &[&interface.to_string() as &RefArg],
+            &[&interface.to_string() as &dyn RefArg],
         )?;
 
         let path: Path = self.dbus.extract(&response)?;
@@ -383,9 +383,9 @@ impl DBusNetworkManager {
             NM_SERVICE_INTERFACE,
             "ActivateConnection",
             &[
-                &Path::new("/")? as &RefArg,
-                &Path::new(path)? as &RefArg,
-                &Path::new("/")? as &RefArg,
+                &Path::new("/")? as &dyn RefArg,
+                &Path::new(path)? as &dyn RefArg,
+                &Path::new("/")? as &dyn RefArg,
             ],
         )?;
 
@@ -404,7 +404,7 @@ impl DBusNetworkManager {
             path,
             NM_WIRELESS_INTERFACE,
             "RequestScan",
-            &[&options as &RefArg],
+            &[&options as &dyn RefArg],
         )?;
 
         Ok(())
@@ -446,19 +446,19 @@ impl DBusNetworkManager {
 }
 
 impl VariantTo<DeviceType> for DBusApi {
-    fn variant_to(value: &Variant<Box<RefArg>>) -> Option<DeviceType> {
+    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<DeviceType> {
         value.0.as_i64().map(DeviceType::from)
     }
 }
 
 impl VariantTo<DeviceState> for DBusApi {
-    fn variant_to(value: &Variant<Box<RefArg>>) -> Option<DeviceState> {
+    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<DeviceState> {
         value.0.as_i64().map(DeviceState::from)
     }
 }
 
 impl VariantTo<NM80211ApFlags> for DBusApi {
-    fn variant_to(value: &Variant<Box<RefArg>>) -> Option<NM80211ApFlags> {
+    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<NM80211ApFlags> {
         value
             .0
             .as_i64()
@@ -467,7 +467,7 @@ impl VariantTo<NM80211ApFlags> for DBusApi {
 }
 
 impl VariantTo<NM80211ApSecurityFlags> for DBusApi {
-    fn variant_to(value: &Variant<Box<RefArg>>) -> Option<NM80211ApSecurityFlags> {
+    fn variant_to(value: &Variant<Box<dyn RefArg>>) -> Option<NM80211ApSecurityFlags> {
         value
             .0
             .as_i64()

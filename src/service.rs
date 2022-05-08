@@ -5,12 +5,15 @@ extern crate tokio_timer;
 
 use std::str::FromStr;
 use std::time::Duration;
-use self::dbus::{BusType, Connection, ConnectionItem, Interface, Member, Message, Path, Props};
 use self::dbus::arg::{Dict, Iter, Variant};
 use self::futures::Future;
 use self::futures_cpupool::CpuPool;
 use self::tokio_timer::Timer;
 
+use dbus::arg::messageitem::Props;
+use dbus::strings::{Member, Interface};
+use dbus::{Message, Path};
+use dbus::ffidisp::{Connection, BusType, ConnectionItem};
 use errors::*;
 
 pub const SD_SERVICE_MANAGER: &str = "org.freedesktop.systemd1";
